@@ -1,8 +1,11 @@
 import pandas as pd
 import os
+import math
 from sqlalchemy import create_engine
 from dotenv import load_dotenv
 from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -75,12 +78,15 @@ class Subtask:
       print('The top 3 handset manufacturers are:')
       print(self.data['Handset Manufacturer'].value_counts().head(3))
       d=list(self.data['Handset Manufacturer'].value_counts().head(3).index)
-      d=list(self.data['Handset Manufacturer'].value_counts().head(3).index)
       for i in d:
         print(f'The top 5 handsets for {i} are:')
         dr=self.data.loc[self.data['Handset Manufacturer']==i]
         print(dr['Handset Type'].value_counts().head(3))
 def plot_null(data):
+    """
+    This function sums up the null values found in each columns and plots their amount in 
+    a bar chart
+    """
     plt.figure(figsize=(10, 6))  # Adjust the figure size as needed
     data.isnull().sum().plot(kind='bar')
     plt.xlabel('Columns')
@@ -88,13 +94,18 @@ def plot_null(data):
     plt.title('Count of Null Values in Each Column')
     plt.show()
 def plot_corr(data,lis:list):
-        l=[]
-        for i in lis:
-            for j in data.columns:
-                if i in j:
-                    l.append(j)
-        corr=data[l].corr()
-        return sns.heatmap(corr,annot=True,cbar=False)
+    """
+    This function uses seaborn's heatmap function to plot the correlation matrix of the application's data 
+    usage or any column names provided as list to the list parameter 
+
+    """
+    l=[]
+    for i in lis:
+        for j in data.columns:
+            if i in j:
+                l.append(j)
+    corr=data[l].corr()
+    return sns.heatmap(corr,annot=True,cbar=False)
 def decile_class(data,decile,result):
     """
     This function reads the data and makes a decile class from the data using the decile parameter column and 
@@ -111,6 +122,12 @@ def pca(data):
     pca=PCA(n_components=2)
     d=pca.fit_transform(data)
     return plt.scatter(d[:,0],d[:,1],c=data['Duration (s)'],cmap='coolwarm')
+
+ 
+
+
+
+        
         
 
           
