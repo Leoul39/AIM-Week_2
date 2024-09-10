@@ -2,6 +2,7 @@ import pandas as pd
 import os
 from sqlalchemy import create_engine
 from dotenv import load_dotenv
+from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -58,6 +59,7 @@ class DataOverview:
         dp=pd.merge(dd,dc,on='IMSI')
         dp=dp.drop(identifier+'_x',axis=1)
         dp=dp.sort_values(identifier+'_y',ascending=False)
+        dp=dp.rename(columns={identifier+'_y':identifier})
         return dp
 class Subtask:
     def __init__(self,data):
@@ -78,6 +80,13 @@ class Subtask:
         print(f'The top 5 handsets for {i} are:')
         dr=self.data.loc[self.data['Handset Manufacturer']==i]
         print(dr['Handset Type'].value_counts().head(3))
+def plot_null(data):
+    plt.figure(figsize=(10, 6))  # Adjust the figure size as needed
+    data.isnull().sum().plot(kind='bar')
+    plt.xlabel('Columns')
+    plt.ylabel('Count of Null Values')
+    plt.title('Count of Null Values in Each Column')
+    plt.show()
 def plot_corr(data,lis:list):
         l=[]
         for i in lis:
@@ -86,7 +95,22 @@ def plot_corr(data,lis:list):
                     l.append(j)
         corr=data[l].corr()
         return sns.heatmap(corr,annot=True,cbar=False)
+def decile_class(data,decile,result):
+    """
+    This function reads the data and makes a decile class from the data using the decile parameter column and 
+    computes the result per decile class using the column provided by the result parameter. The function also
+    returns the top 5 classes
+    """
+    data['Decile_Class'] = pd.qcut(data[decile], q=5, labels=False)
 
+    # Compute total data (DL+UL) per decile class
+    per_decile = pd.DataFrame(data.groupby('Decile_Class')[result].sum())
+    per_decile['Total Volume (in GB)']=per_decile[result]/10**3
+    return per_decile
+def pca(data):
+    pca=PCA(n_components=2)
+    d=pca.fit_transform(data)
+    return plt.scatter(d[:,0],d[:,1],c=data['Duration (s)'],cmap='coolwarm')
         
 
           
